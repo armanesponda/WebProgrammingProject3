@@ -4,9 +4,9 @@ import mongoose from 'mongoose';
 
 // Used when you implement the TODO handlers below.
 // eslint-disable-next-line no-unused-vars
-import User from './schema/user';
+import User from './schema/user.js';
 // eslint-disable-next-line no-unused-vars
-import Photo from './schema/photo';
+import Photo from './schema/photo.js';
 
 const app = express();
 
