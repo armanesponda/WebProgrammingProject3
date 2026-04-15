@@ -27,20 +27,24 @@ function UserDetail() {
       {/* Pretty basic display of info but pleasant I'd say */}
       <Typography>
         Name:
+        {' '}
         {userDetails.first_name}
         {' '}
         {userDetails.last_name}
       </Typography>
       <Typography>
         Location:
+        {' '}
         {userDetails.location}
       </Typography>
       <Typography>
         Occupation:
+        {' '}
         {userDetails.occupation}
       </Typography>
       <Typography>
         User Description:
+        {' '}
         {userDetails.description}
       </Typography>
       <br />
