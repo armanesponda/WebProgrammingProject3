@@ -12,7 +12,7 @@ const app = express();
 
 // define these in env and import in this file
 const port = process.env.PORT || 3001;
-const mongoUrl = process.env.MONGO_URL || 'mongodb://127.0.0.1/project3';
+const mongoUrl = process.env.MONGO_URL || 'mongodb://127.0.0.1/project2';
 
 
 // Enable CORS for frontend running on a different port
