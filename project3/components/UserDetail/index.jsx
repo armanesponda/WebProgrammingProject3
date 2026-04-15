@@ -44,7 +44,8 @@ function UserDetail() {
         {userDetails.description}
       </Typography>
       <br />
-      <Link to={`/users/${params.userId}/photos`}>
+      <Link to={`/users/${params.userId}/photos`}
+        className='photo-link'>
         {`${userDetails.first_name}'s Photos`}
       </Link>
     </Typography>

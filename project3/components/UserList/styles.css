@@ -1,0 +1,32 @@
+.MuiListItem-root a {
+  text-decoration: none;
+  width: 100%;
+}
+
+/* button style */
+.MuiListItem-root .MuiListItemText-root {
+  background-color: #f5f5f5;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 10px 16px;
+  transition: all 0.2s ease;
+}
+
+.MuiListItem-root .MuiTypography-root {
+  font-weight: 500;
+  color: #333;
+}
+
+/* hover */
+.MuiListItem-root a:hover .MuiListItemText-root {
+  background-color: #1976d2;
+  border-color: #1976d2;
+  transform: translateY(-2px);
+}
+.MuiListItem-root a:hover .MuiTypography-root {
+  color: white;
+}
+
+.MuiListItem-root {
+  margin-bottom: 8px;
+}
