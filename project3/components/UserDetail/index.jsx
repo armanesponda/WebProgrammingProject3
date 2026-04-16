@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Link, useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import api from '../../lib/api';
 
 import './styles.css';
@@ -9,18 +10,13 @@ import './styles.css';
 function UserDetail() {
   const params = useParams();
 
-  const [userDetails, setUserDetails] = useState(null);
+  const { data: userDetails, isLoading, isError } = useQuery({
+    queryKey: ['user', params.userId],
+    queryFn: () => api.get(`/user/${params.userId}`).then(res => res.data),
+  });
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const response = await api.get(`/user/${params.userId}`);
-      setUserDetails(response.data);
-    };
-    fetchUsers();
-  }, [params.userId]);
-
-  // load guard similar to UserPhotos
-  if (!userDetails) return <Typography>Loading...</Typography>;
+  if (isLoading) return <Typography>Loading...</Typography>;
+  if (isError) return <Typography>Error loading user.</Typography>;
 
   return (
     <Typography variant="body1">
@@ -52,3 +48,4 @@ function UserDetail() {
 }
 
 export default UserDetail;
+
