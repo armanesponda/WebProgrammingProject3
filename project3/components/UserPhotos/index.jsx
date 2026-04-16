@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   Box,
   Typography,
@@ -12,18 +12,14 @@ import './styles.css';
 function UserPhotos() {
   const params = useParams();
 
-  const [userPhotos, setUserPhotos] = useState([]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const response = await api.get(`/photosOfUser/${params.userId}`);
-      setUserPhotos(response.data);
-    };
-    fetchUsers();
-  }, [params.userId]);
+  const { data: userPhotos, isLoading, isError } = useQuery({
+    queryKey: ['photos', params.userId],
+    queryFn: () => api.get(`/photosOfUser/${params.userId}`).then(res => res.data),
+  });
 
   // load guard so it doesn't access userPhotos before fetched, when updated it runs right return
-  if (!userPhotos) return <Typography>Loading...</Typography>;
+  if (isLoading) return <Typography>Loading...</Typography>;
+  if (isError) return <Typography>Error loading user.</Typography>;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -52,3 +48,4 @@ function UserPhotos() {
 }
 
 export default UserPhotos;
+
