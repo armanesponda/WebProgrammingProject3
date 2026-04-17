@@ -98,6 +98,7 @@ function UserLayout() {
 
 function PhotoShareApp() {
   const [currentUser, setCurrentUser] = React.useState(null);
+  console.log('PhotoShareApp: currentUser is:', currentUser);
 
   const router = createBrowserRouter([
     {
@@ -119,8 +120,6 @@ function PhotoShareApp() {
         },
 
         //must be logged in
-        //{ index: true, element: <Home /> },
-
         { path: 'users', element: <UserList /> },
 
         {

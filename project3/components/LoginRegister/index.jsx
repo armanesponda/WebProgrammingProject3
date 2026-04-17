@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import './styles.css';
 
 function LoginRegister({setCurrentUser}) {
     const [isLogin, setIsLogin] = useState(true);   //true if login, false if register
+    const navigate = useNavigate();
     const [login_name, setLogin_name] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -12,22 +14,21 @@ function LoginRegister({setCurrentUser}) {
         e.preventDefault();
         setError("");
 
-        try {
-            const res = await fetch("/path", {      //edit
-                //POST... utilize useMutation
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Login failed.")
-            }
-            const user = await res.json();
-
-            //set user after successful login
-            setCurrentUser(user);
-        } catch (err) {
-            setError(err.message);
+        if (login_name === '' || password === '') {
+            setError("Please enter login name and password.");
+            return;
         }
+
+        // fake successful login user
+        const fakeUser = {
+            _id: "12345",
+            first_name: "Test",
+            last_name: "User",
+            login_name
+        };
+
+        setCurrentUser(fakeUser);
+        navigate(`/`);  //navigate to home after login
     };
     
     const handleRegister = (e) => {
@@ -38,6 +39,9 @@ function LoginRegister({setCurrentUser}) {
     return (
         <div>
             <h2>{isLogin ? "Log in" : "Register"}</h2>
+
+            {error && <p className="errorMsg">{error}</p>}
+
             {isLogin ? (
                 //login
                 <form onSubmit={handleLogin}>
@@ -57,9 +61,29 @@ function LoginRegister({setCurrentUser}) {
             ) : (
                 //register
                 <form onSubmit={handleRegister}>
-                    <input></input>
+                    <input
+                        value={login_name}
+                        onChange={(e) => setLogin_name(e.target.value)}
+                        placeholder="Login Name"
+                    />
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                    />
+                    <button type="submit">Register</button>
                 </form>
             )}
+            <p
+                onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError("");
+                }}
+                style={{ cursor: "pointer", marginTop: "10px" }}
+            >
+                {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
+            </p>
         </div>
     )
 }
