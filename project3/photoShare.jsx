@@ -129,8 +129,14 @@ function PhotoShareApp() {
           path: 'users/:userId',
           element: <UserLayout />,
           children: [
-            { index: true, element: <UserDetailRoute /> },
-            { path: 'photos', element: <UserPhotosRoute /> },
+            { 
+              index: true,
+              element: <UserDetailRoute currentUser={currentUser}/>
+            },
+            { 
+              path: 'photos',
+              element: <UserPhotosRoute currentUser={currentUser}/>
+            },
           ],
         },
 
