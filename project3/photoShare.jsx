@@ -65,15 +65,18 @@ function LoginRegisterRoute({setCurrentUser}) {
   return <LoginRegister setCurrentUser={setCurrentUser} />;
 }
 
-//should edit to hide sidebar
 function Root({ currentUser}) {
   return (
     <div>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <TopBar currentUser={currentUser} />
-        </Grid>
-        <div className="main-topbar-buffer" />
+        {currentUser && (
+          <>
+            <Grid item xs={12}>
+              <TopBar currentUser={currentUser} />
+            </Grid>
+            <div className="main-topbar-buffer" />
+          </>
+        )}
 
         {currentUser && (
           <Grid item sm={3}>
