@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   List,
   ListItem,
   ListItemText,
+  Typography,
 } from '@mui/material';
 import api from '../../lib/api';
 
 import './styles.css';
 
 function UserList() {
-  const [userList, setUserList] = useState([]);// set empty array so it doesn't crash
 
-  // basic api call gets the user list and then return displays it on sidebar
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const response = await api.get('/user/list');
-      setUserList(response.data);
-    };
-    fetchUsers();
-  }, []);
+  const { data: userList, isLoading, isError } = useQuery({
+    queryKey: ['userList'],
+    queryFn: () => api.get(`/user/list`).then(res => res.data),
+  });
+
+  if (isLoading) return <Typography>Loading...</Typography>;
+  if (isError) return <Typography>Error loading user.</Typography>;
 
   return (
     <div>

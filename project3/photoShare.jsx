@@ -2,6 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ReactDOM from 'react-dom/client';
 import { Grid, Typography, Paper } from '@mui/material';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   createBrowserRouter, RouterProvider, Outlet, useParams,
 } from 'react-router-dom';
@@ -11,6 +12,8 @@ import TopBar from './components/TopBar';
 import UserDetail from './components/UserDetail';
 import UserList from './components/UserList';
 import UserPhotos from './components/UserPhotos';
+
+const queryClient = new QueryClient();
 
 function Home() {
   return (
@@ -50,24 +53,26 @@ function UserPhotosRoute() {
 
 function Root() {
   return (
-    <div>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <TopBar />
+    <QueryClientProvider client={queryClient}>
+      <div>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TopBar />
+          </Grid>
+          <div className="main-topbar-buffer" />
+          <Grid item sm={3}>
+            <Paper className="main-grid-item">
+              <UserList />
+            </Paper>
+          </Grid>
+          <Grid item sm={9}>
+            <Paper className="main-grid-item">
+              <Outlet />
+            </Paper>
+          </Grid>
         </Grid>
-        <div className="main-topbar-buffer" />
-        <Grid item sm={3}>
-          <Paper className="main-grid-item">
-            <UserList />
-          </Paper>
-        </Grid>
-        <Grid item sm={9}>
-          <Paper className="main-grid-item">
-            <Outlet />
-          </Paper>
-        </Grid>
-      </Grid>
-    </div>
+      </div>
+    </QueryClientProvider>
   );
 }
 
