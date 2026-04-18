@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 
 import './styles/main.css';
+import api from './lib/api';
 import TopBar from './components/TopBar';
 import UserDetail from './components/UserDetail';
 import UserList from './components/UserList';
@@ -61,18 +62,21 @@ function UserPhotosRoute({currentUser}) {
   return <UserPhotos userId={userId} />;
 }
 
-function LoginRegisterRoute({setCurrentUser}) {
-  return <LoginRegister setCurrentUser={setCurrentUser} />;
+function LoginRegisterRoute({ currentUser, setCurrentUser }) {
+  if (currentUser) {
+    return <Navigate to="/" replace />;
+  }
+  return <LoginRegister currentUser={currentUser} setCurrentUser={setCurrentUser} />;
 }
 
-function Root({ currentUser}) {
+function Root({ currentUser, handleLogout }) {
   return (
     <div>
       <Grid container spacing={2}>
         {currentUser && (
           <>
             <Grid item xs={12}>
-              <TopBar currentUser={currentUser} />
+              <TopBar currentUser={currentUser} onLogout={handleLogout} />
             </Grid>
             <div className="main-topbar-buffer" />
           </>
@@ -103,39 +107,58 @@ function PhotoShareApp() {
   const [currentUser, setCurrentUser] = React.useState(null);
   console.log('PhotoShareApp: currentUser is:', currentUser);
 
+  React.useEffect(() => {
+    const fetchSessionUser = async () => {
+      try {
+        const response = await api.get('/admin/me');
+        setCurrentUser(response.data);
+      } catch (err) {
+        setCurrentUser(null);
+      }
+    };
+    fetchSessionUser();
+  }, []);
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
+
   const router = createBrowserRouter([
     {
       path: '/',
-      element: <Root currentUser={currentUser} />,
+      element: <Root currentUser={currentUser} handleLogout={handleLogout} />,
       children: [
         //redirect root to login-register if not logged in
         {
           index: true,
-          element: currentUser ? <Home/> : <Navigate to="/login-register" replace />,
+          element: currentUser ? <Home /> : <Navigate to="/login-register" replace />,
         },
 
         //can be accessed while not logged in
         {
           path: 'login-register',
           element: (
-            <LoginRegisterRoute setCurrentUser={setCurrentUser} />
+            <LoginRegisterRoute currentUser={currentUser} setCurrentUser={setCurrentUser} />
           ),
         },
 
         //must be logged in
-        { path: 'users', element: <UserList /> },
+        {
+          path: 'users',
+          element: currentUser ? <UserList /> : <Navigate to="/login-register" replace />,
+        },
 
         {
           path: 'users/:userId',
           element: <UserLayout />,
           children: [
-            { 
+            {
               index: true,
-              element: <UserDetailRoute currentUser={currentUser}/>
+              element: <UserDetailRoute currentUser={currentUser} />,
             },
-            { 
+            {
               path: 'photos',
-              element: <UserPhotosRoute currentUser={currentUser}/>
+              element: <UserPhotosRoute currentUser={currentUser} />,
             },
           ],
         },
@@ -143,7 +166,7 @@ function PhotoShareApp() {
         //default to login-register
         {
           path: '*',
-          element: <Navigate to="/login-register" />
+          element: <Navigate to="/login-register" />,
         },
       ],
     },
