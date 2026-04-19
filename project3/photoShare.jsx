@@ -2,6 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ReactDOM from 'react-dom/client';
 import { Grid, Typography, Paper } from '@mui/material';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   createBrowserRouter, RouterProvider, Outlet, useParams, Navigate
 } from 'react-router-dom';
@@ -13,6 +14,8 @@ import UserDetail from './components/UserDetail';
 import UserList from './components/UserList';
 import UserPhotos from './components/UserPhotos';
 import LoginRegister from './components/LoginRegister';
+
+const queryClient = new QueryClient();
 
 function Home() {
   return (
@@ -71,31 +74,34 @@ function LoginRegisterRoute({ currentUser, setCurrentUser }) {
 
 function Root({ currentUser, handleLogout }) {
   return (
-    <div>
-      <Grid container spacing={2}>
-        {currentUser && (
-          <>
-            <Grid item xs={12}>
-              <TopBar currentUser={currentUser} onLogout={handleLogout} />
-            </Grid>
-            <div className="main-topbar-buffer" />
-          </>
-        )}
+    <QueryClientProvider client={queryClient}>
+      <div>
+        <Grid container spacing={2}>
+          {currentUser && (
+            <>
+              <Grid item xs={12}>
+                <TopBar currentUser={currentUser} onLogout={handleLogout} />
+              </Grid>
+              <div className="main-topbar-buffer" />
+            </>
+          )}
 
-        {currentUser && (
-          <Grid item sm={3}>
+          {currentUser && (
+            <Grid item sm={3}>
+              <Paper className="main-grid-item">
+                <UserList />
+              </Paper>
+            </Grid>
+          )}
+
+          <Grid item sm={currentUser ? 9 : 12}>
             <Paper className="main-grid-item">
-              <UserList />
+              <Outlet />
             </Paper>
           </Grid>
-        )}
-        <Grid item sm={currentUser ? 9 : 12}>
-          <Paper className="main-grid-item">
-            <Outlet />
-          </Paper>
         </Grid>
-      </Grid>
-    </div>
+      </div>
+    </QueryClientProvider>
   );
 }
 
