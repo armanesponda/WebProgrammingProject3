@@ -1,47 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import api from '../../lib/api';
 
 import './styles.css';
 
-function TopBar({ currentUser, onLogout }) {
+function TopBar({ currentUser }) {
   const route = useLocation();
   const params = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   let photoStatus = false;
-
-  const [topBar, setTopBar] = useState();
 
   if (route.pathname.includes('photos')) {
     photoStatus = true;
   }
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const response = await api.get(`/user/${params.userId}`);
-      setTopBar(response.data);
-    };
-    if (params.userId) {
-      fetchUsers();
-    }
-  }, [params.userId]);
+  const {
+    data: topBar,
+    isLoading: topBarLoading,
+    isError: topBarError,
+  } = useQuery({
+    queryKey: ['userDetail', params.userId],
+    queryFn: () => api.get(`/user/${params.userId}`).then((res) => res.data),
+    enabled: !!params.userId,
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: () => api.post('/admin/logout'),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['sessionUser']);
+      queryClient.invalidateQueries(['userList']);
+      navigate('/login-register');
+    },
+    onError: (err) => {
+      console.error('Logout failed', err);
+    },
+  });
 
   function getContextText() {
     if (!params.userId) return 'Users';
-    if (!topBar) return 'Loading';
+    if (topBarLoading) return 'Loading';
+    if (topBarError || !topBar) return 'Users';
     if (photoStatus) return `Photos of ${topBar.first_name} ${topBar.last_name}`;
     return `${topBar.first_name} ${topBar.last_name}`;
   }
 
-  const handleLogout = async () => {
-    try {
-      await api.post('/admin/logout');
-      onLogout();
-      navigate('/login-register');
-    } catch (err) {
-      console.error('Logout failed', err);
-    }
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (

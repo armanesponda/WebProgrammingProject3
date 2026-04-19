@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../lib/api';
 
 import './styles.css';
 
-function LoginRegister({ currentUser, setCurrentUser }) {
+function LoginRegister({ currentUser }) {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState({
     login_name: '',
     password: '',
@@ -18,7 +20,35 @@ function LoginRegister({ currentUser, setCurrentUser }) {
   });
   const [error, setError] = useState('');
 
-  const handleLogin = async (e) => {
+  const loginMutation = useMutation({
+    mutationFn: (body) => api.post('/admin/login', body).then((res) => res.data),
+    onSuccess: (user) => {
+      queryClient.setQueryData(['sessionUser'], user);
+      queryClient.invalidateQueries(['userList']);
+      navigate(`/users/${user._id}`);
+    },
+    onError: (err) => {
+      setError(err.response?.data || 'Login failed. Please check your credentials.');
+    },
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: (body) => api.post('/user', body).then((res) => res.data),
+    onSuccess: (user) => {
+      queryClient.setQueryData(['sessionUser'], user);
+      queryClient.invalidateQueries(['userList']);
+      navigate(`/users/${user._id}`);
+    },
+    onError: (err) => {
+      setError(err.response?.data || 'Registration failed. Please try again.');
+    },
+  });
+
+  if (currentUser) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleLogin = (e) => {
     e.preventDefault();
     setError('');
 
@@ -27,19 +57,13 @@ function LoginRegister({ currentUser, setCurrentUser }) {
       return;
     }
 
-    try {
-      const response = await api.post('/admin/login', {
-        login_name: form.login_name.trim(),
-        password: form.password,
-      });
-      setCurrentUser(response.data);
-      navigate(`/users/${response.data._id}`);
-    } catch (err) {
-      setError(err.response?.data || 'Login failed. Please check your credentials.');
-    }
+    loginMutation.mutate({
+      login_name: form.login_name.trim(),
+      password: form.password,
+    });
   };
 
-  const handleRegister = async (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
     setError('');
 
@@ -50,21 +74,16 @@ function LoginRegister({ currentUser, setCurrentUser }) {
       return;
     }
 
-    try {
-      const response = await api.post('/user', {
-        login_name: form.login_name.trim(),
-        password: form.password,
-        first_name: form.first_name.trim(),
-        last_name: form.last_name.trim(),
-        location: form.location.trim(),
-        description: form.description.trim(),
-        occupation: form.occupation.trim(),
-      });
-      setCurrentUser(response.data);
-      navigate(`/users/${response.data._id}`);
-    } catch (err) {
-      setError(err.response?.data || 'Registration failed. Please try again.');
-    }
+    registerMutation.mutate({
+      login_name: form.login_name.trim(),
+      password: form.password,
+      first_name: form.first_name.trim(),
+      last_name: form.last_name.trim(),
+      location: form.location.trim(),
+      description: form.description.trim(),
+      occupation: form.occupation.trim(),
+    })
+    setError('');
   };
 
   return (
