@@ -2,6 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ReactDOM from 'react-dom/client';
 import { Grid, Typography, Paper } from '@mui/material';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   createBrowserRouter, RouterProvider, Outlet, useParams, Navigate
 } from 'react-router-dom';
@@ -12,6 +13,8 @@ import UserDetail from './components/UserDetail';
 import UserList from './components/UserList';
 import UserPhotos from './components/UserPhotos';
 import LoginRegister from './components/LoginRegister';
+
+const queryClient = new QueryClient();
 
 function Home() {
   return (
@@ -65,7 +68,7 @@ function LoginRegisterRoute({setCurrentUser}) {
   return <LoginRegister setCurrentUser={setCurrentUser} />;
 }
 
-function Root({ currentUser}) {
+function Root({ currentUser }) {
   return (
     <div>
       <Grid container spacing={2}>
@@ -85,6 +88,7 @@ function Root({ currentUser}) {
             </Paper>
           </Grid>
         )}
+
         <Grid item sm={currentUser ? 9 : 12}>
           <Paper className="main-grid-item">
             <Outlet />
