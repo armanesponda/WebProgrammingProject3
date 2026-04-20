@@ -5,7 +5,7 @@ import api from '../../lib/api';
 
 import './styles.css';
 
-function TopBar() {
+function TopBar({currentUser}) {
   // same basic assigns of useState and params in most files
   const route = useLocation();
   const params = useParams();
@@ -38,7 +38,7 @@ function TopBar() {
     <AppBar className="topbar-appBar" position="absolute">
       <Toolbar>
         <Typography variant="h5" color="inherit">
-          Armando Esponda
+          Hi {currentUser ? currentUser.first_name : 'Guest'}!
         </Typography>
         <Typography sx={{ marginLeft: 'auto' }}>
           {/* Had a ternary op that I had to get rid of because of lint >:( */}

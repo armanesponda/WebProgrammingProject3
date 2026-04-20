@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { Grid, Typography, Paper } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
-  createBrowserRouter, RouterProvider, Outlet, useParams,
+  createBrowserRouter, RouterProvider, Outlet, useParams, Navigate
 } from 'react-router-dom';
 
 import './styles/main.css';
@@ -12,6 +12,7 @@ import TopBar from './components/TopBar';
 import UserDetail from './components/UserDetail';
 import UserList from './components/UserList';
 import UserPhotos from './components/UserPhotos';
+import LoginRegister from './components/LoginRegister';
 
 const queryClient = new QueryClient();
 
@@ -39,40 +40,62 @@ function Home() {
   );
 }
 
-function UserDetailRoute() {
+function UserDetailRoute({currentUser}) {
   const { userId } = useParams();
+
+  //if not logged in, default to login-register page
+  if (!currentUser) {
+    return <Navigate to="/login-register" />
+  }
+
   // eslint-disable-next-line no-console
   console.log('UserDetailRoute: userId is:', userId);
   return <UserDetail userId={userId} />;
 }
 
-function UserPhotosRoute() {
+function UserPhotosRoute({currentUser}) {
   const { userId } = useParams();
+  
+  //if not logged in, default to login-register page
+  if (!currentUser) {
+    return <Navigate to="/login-register" />
+  }
+
   return <UserPhotos userId={userId} />;
 }
 
-function Root() {
+function LoginRegisterRoute({setCurrentUser}) {
+  return <LoginRegister setCurrentUser={setCurrentUser} />;
+}
+
+function Root({ currentUser }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TopBar />
-          </Grid>
-          <div className="main-topbar-buffer" />
+    <div>
+      <Grid container spacing={2}>
+        {currentUser && (
+          <>
+            <Grid item xs={12}>
+              <TopBar currentUser={currentUser} />
+            </Grid>
+            <div className="main-topbar-buffer" />
+          </>
+        )}
+
+        {currentUser && (
           <Grid item sm={3}>
             <Paper className="main-grid-item">
               <UserList />
             </Paper>
           </Grid>
-          <Grid item sm={9}>
-            <Paper className="main-grid-item">
-              <Outlet />
-            </Paper>
-          </Grid>
+        )}
+
+        <Grid item sm={currentUser ? 9 : 12}>
+          <Paper className="main-grid-item">
+            <Outlet />
+          </Paper>
         </Grid>
-      </div>
-    </QueryClientProvider>
+      </Grid>
+    </div>
   );
 }
 
@@ -80,26 +103,59 @@ function UserLayout() {
   return <Outlet />;
 }
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Root />,
-    children: [
-      { index: true, element: <Home /> },
+function PhotoShareApp() {
+  const [currentUser, setCurrentUser] = React.useState(null);
+  console.log('PhotoShareApp: currentUser is:', currentUser);
 
-      { path: 'users', element: <UserList /> },
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: <Root currentUser={currentUser} />,
+      children: [
+        //redirect root to login-register if not logged in
+        {
+          index: true,
+          element: currentUser ? <Home/> : <Navigate to="/login-register" replace />,
+        },
 
-      {
-        path: 'users/:userId',
-        element: <UserLayout />,
-        children: [
-          { index: true, element: <UserDetailRoute /> },
-          { path: 'photos', element: <UserPhotosRoute /> },
-        ],
-      },
-    ],
-  },
-]);
+        //can be accessed while not logged in
+        {
+          path: 'login-register',
+          element: (
+            <LoginRegisterRoute setCurrentUser={setCurrentUser} />
+          ),
+        },
+
+        //must be logged in
+        { path: 'users', element: <UserList /> },
+
+        {
+          path: 'users/:userId',
+          element: <UserLayout />,
+          children: [
+            { 
+              index: true,
+              element: <UserDetailRoute currentUser={currentUser}/>
+            },
+            { 
+              path: 'photos',
+              element: <UserPhotosRoute currentUser={currentUser}/>
+            },
+          ],
+        },
+
+        //default to login-register
+        {
+          path: '*',
+          element: <Navigate to="/login-register" />
+        },
+      ],
+    },
+  ]);
+
+  return <RouterProvider router={router} />;
+}
 
 const root = ReactDOM.createRoot(document.getElementById('photoshareapp'));
-root.render(<RouterProvider router={router} />);
+//root.render(<RouterProvider router={router} />);
+root.render(<PhotoShareApp/>);
