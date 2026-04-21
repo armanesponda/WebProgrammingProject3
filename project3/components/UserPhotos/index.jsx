@@ -25,7 +25,7 @@ function UserPhotos() {
 
   const addCommentMutation = useMutation({
     mutationFn: ({ photoId, comment }) =>
-      api.post(`/photos/${photoId}/comments`, { comment }),
+      api.post(`/commentsOfPhoto/${photoId}`, { comment }),
     onSuccess: () => {
       // Invalidate the photos query to refetch updated data
       queryClient.invalidateQueries({ queryKey: ['photos', params.userId] });
