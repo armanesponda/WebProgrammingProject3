@@ -1,10 +1,10 @@
 import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ReactDOM from 'react-dom/client';
-import { Grid, Typography, Paper } from '@mui/material';
+import { Grid, Typography, Paper, Button } from '@mui/material';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
-  createBrowserRouter, RouterProvider, Outlet, useParams, Navigate
+  createBrowserRouter, RouterProvider, Outlet, useParams, Navigate, useNavigate
 } from 'react-router-dom';
 
 import './styles/main.css';
@@ -18,26 +18,39 @@ import LoginRegister from './components/LoginRegister';
 const queryClient = new QueryClient();
 
 function Home() {
+  
+  const navigate = useNavigate();
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const response = await api.get('/user/list');
+      return response.data;
+    },
+  });
+
+  const handleRandomUser = () => {
+    if (users.length > 0) {
+      const randomUser = users[Math.floor(Math.random() * users.length)];
+      navigate(`/users/${randomUser._id}`);
+    }
+  };
+
   return (
-    <Typography variant="body1">
-      Welcome to your photosharing app! This
-      {' '}
-      <a href="https://mui.com/components/paper/" rel="noreferrer" target="_blank">Paper</a>
-      {' '}
-      component displays the main content of the application. The
-      {/* {sm={9}} */}
-      {' '}
-      prop in the
-      {' '}
-      <a href="https://mui.com/components/grid/" rel="noreferrer" target="_blank">Grid</a>
-      {' '}
-      item
-      component makes it responsively display 9/12 of the
-      window. The Routes definitions enables us to conditionally
-      render different components to this part of the screen.
-      There is nothing specific to display here. Use your creativity
-      and show some interesting content here.
-    </Typography>
+    <div className="home-container">
+      <Typography variant="body1" className="home-text">
+        Welcome to our photo sharing app!
+        Select a user from the side, or use the button below to view a random user.
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleRandomUser}
+        disabled={users.length === 0}
+        className="home-button"
+      >
+        View Random User
+      </Button>
+    </div>
   );
 }
 
