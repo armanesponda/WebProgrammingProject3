@@ -2,12 +2,13 @@ import React from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ReactDOM from 'react-dom/client';
 import { Grid, Typography, Paper } from '@mui/material';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
   createBrowserRouter, RouterProvider, Outlet, useParams, Navigate
 } from 'react-router-dom';
 
 import './styles/main.css';
+import api from './lib/api';
 import TopBar from './components/TopBar';
 import UserDetail from './components/UserDetail';
 import UserList from './components/UserList';
@@ -40,12 +41,11 @@ function Home() {
   );
 }
 
-function UserDetailRoute({currentUser}) {
+function UserDetailRoute({ currentUser }) {
   const { userId } = useParams();
 
-  //if not logged in, default to login-register page
   if (!currentUser) {
-    return <Navigate to="/login-register" />
+    return <Navigate to="/login-register" />;
   }
 
   // eslint-disable-next-line no-console
@@ -53,19 +53,21 @@ function UserDetailRoute({currentUser}) {
   return <UserDetail userId={userId} />;
 }
 
-function UserPhotosRoute({currentUser}) {
+function UserPhotosRoute({ currentUser }) {
   const { userId } = useParams();
-  
-  //if not logged in, default to login-register page
+
   if (!currentUser) {
-    return <Navigate to="/login-register" />
+    return <Navigate to="/login-register" />;
   }
 
   return <UserPhotos userId={userId} />;
 }
 
-function LoginRegisterRoute({setCurrentUser}) {
-  return <LoginRegister setCurrentUser={setCurrentUser} />;
+function LoginRegisterRoute({ currentUser }) {
+  if (currentUser) {
+    return <Navigate to="/" replace />;
+  }
+  return <LoginRegister currentUser={currentUser} />;
 }
 
 function Root({ currentUser }) {
@@ -103,59 +105,83 @@ function UserLayout() {
   return <Outlet />;
 }
 
-function PhotoShareApp() {
-  const [currentUser, setCurrentUser] = React.useState(null);
-  console.log('PhotoShareApp: currentUser is:', currentUser);
-
-  const router = createBrowserRouter([
-    {
-      path: '/',
-      element: <Root currentUser={currentUser} />,
-      children: [
-        //redirect root to login-register if not logged in
-        {
-          index: true,
-          element: currentUser ? <Home/> : <Navigate to="/login-register" replace />,
-        },
-
-        //can be accessed while not logged in
-        {
-          path: 'login-register',
-          element: (
-            <LoginRegisterRoute setCurrentUser={setCurrentUser} />
-          ),
-        },
-
-        //must be logged in
-        { path: 'users', element: <UserList /> },
-
-        {
-          path: 'users/:userId',
-          element: <UserLayout />,
-          children: [
-            { 
-              index: true,
-              element: <UserDetailRoute currentUser={currentUser}/>
-            },
-            { 
-              path: 'photos',
-              element: <UserPhotosRoute currentUser={currentUser}/>
-            },
-          ],
-        },
-
-        //default to login-register
-        {
-          path: '*',
-          element: <Navigate to="/login-register" />
-        },
-      ],
+function AppRoutes() {
+  const { data: currentUser, isLoading, isError } = useQuery({
+    queryKey: ['sessionUser'],
+    queryFn: async () => {
+      try {
+        //attempt to get current session user
+        const response = await api.get('/admin/me');
+        return response.data;
+      } catch (err) {
+        if (err.response?.status === 401) {
+          return null;
+        }
+        throw err;
+      }
     },
-  ]);
+    retry: false,
+  });
+
+  const router = React.useMemo(
+    () => createBrowserRouter([
+      {
+        path: '/',
+        element: <Root currentUser={currentUser} />,
+        children: [
+          {
+            index: true,
+            element: currentUser ? <Home /> : <Navigate to="/login-register" replace />,
+          },
+          {
+            path: 'login-register',
+            element: <LoginRegisterRoute currentUser={currentUser} />,
+          },
+          {
+            path: 'users',
+            element: currentUser ? <UserList /> : <Navigate to="/login-register" replace />,
+          },
+          {
+            path: 'users/:userId',
+            element: <UserLayout />,
+            children: [
+              {
+                index: true,
+                element: <UserDetailRoute currentUser={currentUser} />,
+              },
+              {
+                path: 'photos',
+                element: <UserPhotosRoute currentUser={currentUser} />,
+              },
+            ],
+          },
+          {
+            path: '*',
+            element: <Navigate to="/login-register" />,
+          },
+        ],
+      },
+    ]),
+    [currentUser],
+  );
+  if (isLoading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (isError) {
+    return <Typography>Error loading session.</Typography>;
+  }
 
   return <RouterProvider router={router} />;
 }
 
+function PhotoShareApp() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppRoutes />
+    </QueryClientProvider>
+  );
+}
+
 const root = ReactDOM.createRoot(document.getElementById('photoshareapp'));
-//root.render(<RouterProvider router={router} />);
-root.render(<PhotoShareApp/>);
+root.render(<PhotoShareApp />);
