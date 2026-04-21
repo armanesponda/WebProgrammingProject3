@@ -14,3 +14,21 @@
   min-height: calc(100vh - 64px);
   padding: 10px;
 }
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.home-text {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.home-button {
+  margin-top: 10px;
+}
