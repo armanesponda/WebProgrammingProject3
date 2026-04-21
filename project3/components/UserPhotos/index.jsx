@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -24,8 +24,7 @@ function UserPhotos() {
   });
 
   const addCommentMutation = useMutation({
-    mutationFn: ({ photoId, comment }) =>
-      api.post(`/commentsOfPhoto/${photoId}`, { comment }),
+    mutationFn: ({ photoId, comment }) => api.post(`/commentsOfPhoto/${photoId}`, { comment }),
     onSuccess: () => {
       // Invalidate the photos query to refetch updated data
       queryClient.invalidateQueries({ queryKey: ['photos', params.userId] });

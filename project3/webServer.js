@@ -86,7 +86,7 @@ app.post('/admin/logout', (req, res) => {
     return res.status(400).send('No user is logged in');
   }
 
-  req.session.destroy((err) => {
+  return req.session.destroy((err) => {
     if (err) {
       return res.status(500).send(err.message);
     }
@@ -282,7 +282,7 @@ app.post('/admin/logout', (req, res) => {
   if (!req.session.userId) {
     return res.status(400).send('No user is currently logged in');
   }
-  req.session.destroy((err) => {
+  return req.session.destroy((err) => {
     if (err) return res.status(500).send('Logout failed');
     return res.status(200).send('Logged out');
   });
@@ -353,7 +353,7 @@ app.post('/commentsOfPhoto/:photoId', requireLogin, async (req, res) => {
     });
     await photo.save();
 
-    return res.status(201).send('Comment added');
+    return res.status(200).send('Comment added');
   } catch (err) {
     return res.status(500).send(err.message);
   }

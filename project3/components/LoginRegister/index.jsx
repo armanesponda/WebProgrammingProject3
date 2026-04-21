@@ -82,7 +82,7 @@ function LoginRegister({ currentUser }) {
       location: form.location.trim(),
       description: form.description.trim(),
       occupation: form.occupation.trim(),
-    })
+    });
     setError('');
   };
 
