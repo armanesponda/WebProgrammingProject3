@@ -353,7 +353,7 @@ app.post('/commentsOfPhoto/:photoId', requireLogin, async (req, res) => {
     });
     await photo.save();
 
-    return res.status(201).send('Comment added');
+    return res.status(200).send('Comment added');
   } catch (err) {
     return res.status(500).send(err.message);
   }
