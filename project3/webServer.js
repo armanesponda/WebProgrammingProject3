@@ -325,6 +325,40 @@ app.post('/user', async (req, res) => {
   }
 });
 
+
+ // POST /commentsOfPhoto/:photoId
+ // Adds a comment to the specified photo
+app.post('/commentsOfPhoto/:photoId', requireLogin, async (req, res) => {
+  try {
+    const { photoId } = req.params;
+    const { comment } = req.body;
+
+    //Requires comment for posting
+    if (!comment || comment.trim().length === 0) {
+      return res.status(400).send('Comment text is required');
+    }
+
+    if (!isValidObjectId(photoId)) {
+      return res.status(400).send('Invalid photo id');
+    }
+
+    const photo = await Photo.findById(photoId);
+    if (!photo) return res.status(404).send('Photo not found');
+
+    // Push comments to photo doc
+    photo.comments.push({
+      comment: comment.trim(),
+      date_time: new Date(),
+      user_id: req.session.userId,
+    });
+    await photo.save();
+
+    return res.status(201).send('Comment added');
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
